@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.atguigu1228.mapper.OrderMapper">
+
+	<insert id="add_order" parameterType="com.atguigu1228.bean.OBJECT_T_MALL_ORDER"
+		useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		insert into
+		t_mall_order (
+		shhr,
+		zje,
+		jdh,
+		yh_id,
+		dzh_id,
+		dzh_mch
+		)values(
+		#{shhr},
+		#{zje},
+		#{jdh},
+		#{yh_id},
+		#{dzh_id},
+		#{dzh_mch}
+		)
+
+	</insert>
+	<insert id="add_order_infos" parameterType="Map"
+		useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		<!-- dd_id -->
+		<!-- sku_id -->
+		<!-- sku_mch -->
+		<!-- shp_tp -->
+		<!-- sku_jg -->
+		<!-- sku_shl -->
+		<!-- sku_kcdz -->
+		<!-- gwch_id -->
+		insert into t_mall_order_info
+		(
+		dd_id,
+		sku_id,
+		sku_mch,
+		shp_tp,
+		sku_jg,
+		sku_shl,
+		sku_kcdz,
+		gwch_id
+		)values
+
+		<foreach collection="list_order_info" item="order_info"
+			separator=",">
+			(
+			#{order_info.dd_id},
+			#{order_info.sku_id},
+			#{order_info.sku_mch},
+			#{order_info.shp_tp},
+			#{order_info.sku_jg},
+			#{order_info.sku_shl},
+			#{order_info.sku_kcdz},
+			#{order_info.gwch_id}
+			)
+		</foreach>
+
+	</insert>
+	<insert id="add_flow" parameterType="com.atguigu1228.bean.T_MALL_FLOW"
+		useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		<!-- yh_id -->
+		<!-- dd_id -->
+		<!-- mqdd -->
+		<!-- lxfsh -->
+
+		insert into t_mall_flow
+		(
+		yh_id,
+		dd_id,
+		mdd
+		)values(
+		#{yh_id},
+		#{dd_id},
+		#{mdd}
+		)
+	</insert>
+	<delete id="delete_cart_by_gwchid_form_order_info"
+		parameterType="List">
+		delete from t_mall_shoppingcar
+		where id in
+		(
+		<foreach collection="list" item="id" separator=",">#{id}</foreach>
+		)
+	</delete>
+
+	<update id="update_order_status" parameterType="com.atguigu1228.bean.OBJECT_T_MALL_ORDER">
+		update t_mall_order
+		<set>
+			<if test="jdh!=0">
+				jdh = #{jdh},
+			</if>
+
+			<if test="yjsdshj!=null">
+				yjsdshj = #{yjsdshj},
+			</if>
+		</set>
+		<where>
+			<if test="id != 0">
+				and id = #{id}
+			</if>
+		</where>
+	</update>
+
+	<update id="update_order_flow_" parameterType="com.atguigu1228.bean.T_MALL_FLOW">
+		update t_mall_flow
+		<set>
+			<if test="psshj != null">
+				psshj = #{psshj},
+			</if>
+
+			<if test="psmsh != null">
+				psmsh = #{psmsh},
+			</if>
+
+			<if test="mqdd != null">
+				mqdd = #{mqdd},
+			</if>
+
+			<if test="ywy != null">
+				ywy = #{ywy},
+			</if>
+
+			<if test="lxfsh != null">
+				lxfsh = #{lxfsh},
+			</if>
+		</set>
+		where
+		dd_id = #{dd_id}
+	</update>
+
+	<select id="select_skukc_by_sku_id" parameterType="int"
+		resultType="int">
+
+		select kc from
+		t_mall_sku where id = #{sku_id}
+
+	</select>
+
+	<update id="update_sku_kc_xl" parameterType="Map">
+
+		update t_mall_sku
+		<set>
+			<if test="sku_gmshl != 0">
+				kc = kc - #{sku_gmshl},
+			</if>
+			<if test="sku_gmshl != 0">
+				sku_xl = sku_xl + #{sku_gmshl},
+			</if>
+		</set>
+		where
+		id = #{sku_id}
+	</update>
+	<select id="select_orderlist_by_userid_orderstatus"
+		parameterType="Map" resultType="com.atguigu1228.bean.OBJECT_T_MALL_ORDER">
+
+		select a.*,b.jdmsh from t_mall_order a left join t_mall_order_phase b
+		on a.jdh = b.id
+		<where>
+			a.yh_id = #{yh_id}
+
+			<if test="jdh!=0">
+				and a.jdh = #{jdh}
+			</if>
+		</where>
+	</select>
+	<select id="select_jdmsh" resultType="com.atguigu1228.bean.T_MALL_ORDER_PAHSE">
+		select * from
+		t_mall_order_phase
+	</select>
+	<select id="select_order_detail_by_id" parameterType="int" resultMap="select_order_detail_by_id_map">
+	
+	select a.*,b.*,a.id as aid,b.id as bid from t_mall_order a left join t_mall_order_info b on b.dd_id = a.id  where a.id = #{id}
+	
+	</select>
+	
+	<resultMap type="com.atguigu1228.bean.OBJECT_T_MALL_ORDER" id="select_order_detail_by_id_map" autoMapping="true">
+	<result column="aid" property="id"/>
+	<collection property="list_order_info" ofType="com.atguigu1228.bean.T_MALL_ORDER_INFO" autoMapping="true">
+	<result column="bid" property="id"/>
+	</collection>
+	</resultMap>
+</mapper>
